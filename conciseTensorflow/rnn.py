@@ -1,6 +1,6 @@
 import numpy as np
-import numpy
 import tensorflow as tf
+import os
 tf.enable_eager_execution()
 
 if not tf.executing_eagerly():
@@ -9,11 +9,12 @@ if not tf.executing_eagerly():
 
 class DataLoader():
     def __init__(self):
-        path = tf.keras.utils.get_file('nietzsche.txt', origin='https://github.com/mbernico/lstm_bot/blob/master/lstm_bot/nietzsche.txt')
+        print(os.getcwd())
+        path = os.path.join(os.getcwd(),'data/nietzche.txt')
         with open(path, encoding='utf-8') as f:
             self.raw_text = f.read().lower()
             self.chars = sorted(list(set(self.raw_text)))
-            self.char_indices = dict((c, i) for i,c in enumerate(self.chars))
+            self.char_indices = dict((c, i) for i, c in enumerate(self.chars))
             self.indices_char = dict((i, c) for i, c in enumerate(self.chars))
             self.text = [self.char_indices[c] for c in self.raw_text]
 
@@ -34,10 +35,10 @@ class RNN(tf.keras.Model):
         self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=256)
         self.dense = tf.keras.layers.Dense(units=self.num_chars)
 
-    def call(self, inputs):
+    def call(self, inputs, training=None, mask=None):
         batch_size, seq_length = tf.shape(inputs)
         inputs = tf.one_hot(inputs, depth=self.num_chars) #[batch_size, seq_length, num_chars]
-        state = self.cell.zero_state(batch_size = batch_size, dtype=tf.float32)
+        state = self.cell.zero_state(batch_size=batch_size, dtype=tf.float32)
         for t in range(seq_length.numpy()):
             output, state = self.cell(inputs[:,t,:], state)
         output = self.dense(output)
@@ -47,7 +48,7 @@ class RNN(tf.keras.Model):
         batch_size, _ = tf.shape(inputs)
         logits = self(inputs)
         prob = tf.nn.softmax(logits/temperature).numpy()
-        return np.array([ np.random.choice(self.num_chars, p=prob[i, :]) for i in range(batch_size.numpy())])
+        return np.array([np.random.choice(self.num_chars, p=prob[i, :]) for i in range(batch_size.numpy())])
 
 
 num_batches = 900
@@ -77,7 +78,7 @@ for diversity in [0.2, 0.5, 1.0, 1.2]:
     for t in range(400):
         y_pred = model.predict(X, diversity)
         print(data_loader.indices_char[y_pred[0]], end='', flush=True)
-        X = np.concatenate([X[:,1:], np.expand_dims(y_pred, axis=1)], axis = -1)
+        X = np.concatenate([X[:,1:], np.expand_dims(y_pred, axis=1)], axis=-1)
 
 
 
