@@ -37,7 +37,7 @@ url = 'http://mattmahoney.net/dc/'
 
 def maybe_download(filename, expected_bytes):
     """Download a file if not present, and make sure it's the right size"""
-    local_filename = os.path.join("/home/tianqin/workspaces/dl/tensorflow_test/data", filename)
+    local_filename = os.path.join("//home/qintian/data/tf", filename)
     if not os.path.exists(local_filename):
         local_filename, _ = request.urlretrieve(url + filename, local_filename)
 
