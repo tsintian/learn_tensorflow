@@ -2,7 +2,6 @@
 import tensorflow as tf
 import numpy as np 
 
-tf.enable_eager_execution()
 
 if not tf.executing_eagerly():
     tf.enable_eager_execution()
